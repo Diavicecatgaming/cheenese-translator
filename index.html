@@ -5,7 +5,7 @@
   <title>Cursed Translator</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: monospace;
       background: #121212;
       color: #f0f0f0;
       margin: 0;
@@ -21,7 +21,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
       text-align: center;
-      max-width: 600px;
+      max-width: 700px;
       width: 100%;
     }
     button {
@@ -53,9 +53,10 @@
     .result {
       margin-top: 15px;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 16px;
       color: #00ff99;
-      word-break: break-word;
+      text-align: left;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -81,7 +82,7 @@
     <div id="cataneese" class="translator">
       <h3>🐱 Cataneese Translator</h3>
       <input type="text" id="cataneeseInput" placeholder="Enter text (letters or numbers)">
-      <button id="btnCataneeseToNumbers">To Numbers</button>
+      <button id="btnCataneeseToAssembly">To Assembly</button>
       <button id="btnCataneeseToLetters">To Letters</button>
       <div class="result" id="cataneeseResult"></div>
     </div>
@@ -121,41 +122,35 @@
         document.getElementById("cheeneseResult").innerText = "Result: " + result;
       });
 
-      // Cataneese (letters <-> numbers)
-      document.getElementById("btnCataneeseToNumbers").addEventListener("click", () => {
+      // Cataneese (Assembly mode)
+      document.getElementById("btnCataneeseToAssembly").addEventListener("click", () => {
         const input = document.getElementById("cataneeseInput").value;
         let result = "";
+        let reg = 1;
 
         for (let char of input) {
           if (/[a-zA-Z]/.test(char)) {
             let code = char.toLowerCase().charCodeAt(0) - 96;
-            result += code + " ";
+            let tag = (char === char.toUpperCase()) ? "(upper)" : "(lower)";
+            result += `MOV R${reg}, ${code} ; ${char} ${tag}\n`;
+            reg = (reg % 8) + 1; // rotate registers 1-8
+          } else if (/\d/.test(char)) {
+            result += `PUSH ${char} ; number\n`;
+          } else if (char === " ") {
+            result += `NOP ; space\n`;
           } else {
-            result += char + " ";
+            result += `DB '${char}' ; symbol\n`;
           }
         }
-        document.getElementById("cataneeseResult").innerText = "Result: " + result.trim();
+        document.getElementById("cataneeseResult").innerText = result.trim();
       });
 
+      // Cataneese (Decode back to letters)
       document.getElementById("btnCataneeseToLetters").addEventListener("click", () => {
-        const input = document.getElementById("cataneeseInput").value.split(/\s+/);
+        const input = document.getElementById("cataneeseInput").value.split("\n");
         let result = "";
 
-        for (let token of input) {
-          if (/^\d+$/.test(token)) {
-            let num = parseInt(token);
-            if (num >= 1 && num <= 26) {
-              result += String.fromCharCode(num + 96);
-            } else {
-              result += token;
-            }
-          } else {
-            result += token;
-          }
-        }
-        document.getElementById("cataneeseResult").innerText = "Result: " + result;
-      });
-    });
-  </script>
-</body>
-</html>
+        for (let line of input) {
+          let match = line.match(/MOV R\d+, (\d+) ; (.) \((upper|lower)\)/);
+          if (match) {
+            let num = parseInt(match
