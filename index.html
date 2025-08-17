@@ -62,8 +62,8 @@
 <body>
   <div class="container">
     <h2>Choose your cursed language</h2>
-    <button onclick="showTranslator('cheenese')">🥢 Cheenese</button>
-    <button onclick="showTranslator('cataneese')">🐱 Cataneese</button>
+    <button id="btnCheenese">🥢 Cheenese</button>
+    <button id="btnCataneese">🐱 Cataneese</button>
 
     <!-- Cheenese (Caesar Cipher) -->
     <div id="cheenese" class="translator">
@@ -73,7 +73,7 @@
       <div style="font-size:14px;color:#aaa">
         Use +N to encode, -N to decode
       </div>
-      <button onclick="cheeneseTranslate()">Translate</button>
+      <button id="btnCheeneseTranslate">Translate</button>
       <div class="result" id="cheeneseResult"></div>
     </div>
 
@@ -81,76 +81,81 @@
     <div id="cataneese" class="translator">
       <h3>🐱 Cataneese Translator</h3>
       <input type="text" id="cataneeseInput" placeholder="Enter text (letters or numbers)">
-      <button onclick="cataneeseToNumbers()">To Numbers</button>
-      <button onclick="cataneeseToLetters()">To Letters</button>
+      <button id="btnCataneeseToNumbers">To Numbers</button>
+      <button id="btnCataneeseToLetters">To Letters</button>
       <div class="result" id="cataneeseResult"></div>
     </div>
   </div>
 
   <script>
-    // Switch between translators
-    function showTranslator(id) {
-      document.getElementById("cheenese").style.display = "none";
-      document.getElementById("cataneese").style.display = "none";
-      document.getElementById(id).style.display = "block";
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      const cheeneseDiv = document.getElementById("cheenese");
+      const cataneeseDiv = document.getElementById("cataneese");
 
-    // Cheenese (Caesar cipher)
-    function cheeneseTranslate() {
-      const word = document.getElementById("cheeneseInput").value;
-      let shift = parseInt(document.getElementById("cheeneseShift").value);
-      let result = "";
-
-      for (let i = 0; i < word.length; i++) {
-        const char = word[i];
-        if (/[a-z]/.test(char)) {
-          result += String.fromCharCode(((char.charCodeAt(0) - 97 + shift + 2600) % 26) + 97);
-        } else if (/[A-Z]/.test(char)) {
-          result += String.fromCharCode(((char.charCodeAt(0) - 65 + shift + 2600) % 26) + 65);
-        } else {
-          result += char;
-        }
+      function showTranslator(id) {
+        cheeneseDiv.style.display = "none";
+        cataneeseDiv.style.display = "none";
+        document.getElementById(id).style.display = "block";
       }
 
-      document.getElementById("cheeneseResult").innerText = "Result: " + result;
-    }
+      // Switch buttons
+      document.getElementById("btnCheenese").addEventListener("click", () => showTranslator("cheenese"));
+      document.getElementById("btnCataneese").addEventListener("click", () => showTranslator("cataneese"));
 
-    // Cataneese (letters <-> numbers)
-    function cataneeseToNumbers() {
-      const input = document.getElementById("cataneeseInput").value;
-      let result = "";
+      // Cheenese (Caesar cipher)
+      document.getElementById("btnCheeneseTranslate").addEventListener("click", () => {
+        const word = document.getElementById("cheeneseInput").value;
+        let shift = parseInt(document.getElementById("cheeneseShift").value);
+        let result = "";
 
-      for (let char of input) {
-        if (/[a-zA-Z]/.test(char)) {
-          let code = char.toLowerCase().charCodeAt(0) - 96;
-          result += code + " ";
-        } else {
-          result += char + " ";
-        }
-      }
-
-      document.getElementById("cataneeseResult").innerText = "Result: " + result.trim();
-    }
-
-    function cataneeseToLetters() {
-      const input = document.getElementById("cataneeseInput").value.split(/\s+/);
-      let result = "";
-
-      for (let token of input) {
-        if (/^\d+$/.test(token)) {
-          let num = parseInt(token);
-          if (num >= 1 && num <= 26) {
-            result += String.fromCharCode(num + 96);
+        for (let i = 0; i < word.length; i++) {
+          const char = word[i];
+          if (/[a-z]/.test(char)) {
+            result += String.fromCharCode(((char.charCodeAt(0) - 97 + shift + 2600) % 26) + 97);
+          } else if (/[A-Z]/.test(char)) {
+            result += String.fromCharCode(((char.charCodeAt(0) - 65 + shift + 2600) % 26) + 65);
           } else {
-            result += token; 
+            result += char;
           }
-        } else {
-          result += token;
         }
-      }
+        document.getElementById("cheeneseResult").innerText = "Result: " + result;
+      });
 
-      document.getElementById("cataneeseResult").innerText = "Result: " + result;
-    }
+      // Cataneese (letters <-> numbers)
+      document.getElementById("btnCataneeseToNumbers").addEventListener("click", () => {
+        const input = document.getElementById("cataneeseInput").value;
+        let result = "";
+
+        for (let char of input) {
+          if (/[a-zA-Z]/.test(char)) {
+            let code = char.toLowerCase().charCodeAt(0) - 96;
+            result += code + " ";
+          } else {
+            result += char + " ";
+          }
+        }
+        document.getElementById("cataneeseResult").innerText = "Result: " + result.trim();
+      });
+
+      document.getElementById("btnCataneeseToLetters").addEventListener("click", () => {
+        const input = document.getElementById("cataneeseInput").value.split(/\s+/);
+        let result = "";
+
+        for (let token of input) {
+          if (/^\d+$/.test(token)) {
+            let num = parseInt(token);
+            if (num >= 1 && num <= 26) {
+              result += String.fromCharCode(num + 96);
+            } else {
+              result += token;
+            }
+          } else {
+            result += token;
+          }
+        }
+        document.getElementById("cataneeseResult").innerText = "Result: " + result;
+      });
+    });
   </script>
 </body>
 </html>
