@@ -21,7 +21,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
       text-align: center;
-      max-width: 450px;
+      max-width: 480px;
     }
     input, button {
       padding: 10px;
@@ -57,6 +57,14 @@
     }
     label {
       color: #ccc;
+      display: block;
+      margin-top: 10px;
+    }
+    .hint {
+      font-size: 14px;
+      color: #aaa;
+      margin-top: -5px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -64,11 +72,13 @@
   <div class="container">
     <h2>🔒 Caesar Cipher Tool</h2>
     <input type="text" id="inputWord" placeholder="Enter text">
-    <br>
+    
     <label for="shiftAmount">Shift amount:</label>
     <input type="number" id="shiftAmount" value="1">
-    <br>
+    <div class="hint">Use <b>+N</b> to encode (shift forward), <b>-N</b> to decode (back translate)</div>
+    
     <button onclick="shiftWord()">Apply Shift</button>
+    
     <div class="result" id="result"></div>
   </div>
 
