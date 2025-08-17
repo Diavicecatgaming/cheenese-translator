@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shift Word Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #f0f0f0;
+    }
+    .container {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Shift Word Tool</h2>
+    <input type="text" id="inputWord" placeholder="Enter a word">
+    <br>
+    <button onclick="shiftWord()">Shift</button>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function shiftWord() {
+      const word = document.getElementById("inputWord").value;
+      let result = "";
+
+      for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        if (/[a-z]/.test(char)) {
+          // shift lowercase
+          result += String.fromCharCode(((char.charCodeAt(0) - 97 + 1) % 26) + 97);
+        } else if (/[A-Z]/.test(char)) {
+          // shift uppercase
+          result += String.fromCharCode(((char.charCodeAt(0) - 65 + 1) % 26) + 65);
+        } else {
+          // keep non-letters unchanged
+          result += char;
+        }
+      }
+
+      document.getElementById("result").innerText = "Result: " + result;
+    }
+  </script>
+</body>
+</html>
