@@ -2,157 +2,158 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cursed Translator</title>
+  <link rel="icon" type="image/png" href="icon.png">
   <style>
     body {
-      font-family: monospace, monospace;
-      background: #111;
-      color: #0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
+      font-family: monospace;
+      background: #121212;
+      color: #eee;
       margin: 0;
+      padding: 20px;
     }
-    .mode-buttons {
+    h1 {
+      text-align: center;
       margin-bottom: 20px;
     }
-    .mode-buttons button {
-      padding: 10px 20px;
-      margin: 5px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      background: #222;
-      color: #0f0;
-      transition: background 0.2s;
+    .tabs {
+      text-align: center;
+      margin-bottom: 20px;
     }
-    .mode-buttons button:hover {
+    .tabs button {
       background: #333;
+      color: #eee;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 5px;
+      border-radius: 8px;
+      cursor: pointer;
     }
-    .container {
+    .tabs button:hover {
+      background: #555;
+    }
+    .translator {
       display: none;
-      background: #000;
+      max-width: 800px;
+      margin: 0 auto;
+      background: #1e1e1e;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,255,0,0.3);
-      max-width: 600px;
-      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-    textarea, input {
-      width: 90%;
-      margin: 10px 0;
-      padding: 10px;
+    textarea {
+      width: 100%;
+      height: 100px;
       background: #111;
-      border: 1px solid #0f0;
-      border-radius: 6px;
       color: #0f0;
-      font-size: 16px;
-      font-family: monospace;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      resize: none;
     }
-    button.action {
-      background: #0f0;
-      color: #000;
-      margin: 5px;
-    }
-    .result {
-      margin-top: 15px;
-      text-align: left;
+    .output {
+      background: #000;
+      padding: 10px;
+      min-height: 80px;
+      border-radius: 6px;
       white-space: pre-wrap;
-      font-size: 14px;
+      color: #0f0;
     }
   </style>
 </head>
 <body>
-  <div class="mode-buttons">
-    <button onclick="showMode('cheenese')">🥢 Cheenese</button>
-    <button onclick="showMode('cataneese')">🐱 Cataneese</button>
+  <h1>☠️ Cursed Translator ☠️</h1>
+  <div class="tabs">
+    <button onclick="showTranslator('cheenese')">🥢 Cheenese</button>
+    <button onclick="showTranslator('cataneese')">🐱 Cataneese</button>
   </div>
 
-  <!-- Cheenese -->
-  <div class="container" id="cheenese">
-    <h2>🥢 Cheenese (Caesar Shift)</h2>
-    <textarea id="cheeneseInput" placeholder="Enter text..."></textarea><br>
-    <input type="number" id="cheeneseShift" value="1">
-    <button class="action" onclick="cheeneseTranslate(1)">Shift Forward</button>
-    <button class="action" onclick="cheeneseTranslate(-1)">Back Translate</button>
-    <div class="result" id="cheeneseResult"></div>
+  <!-- Cheenese Translator -->
+  <div id="cheenese" class="translator">
+    <h2>Cheenese (Caesar Cipher)</h2>
+    <textarea id="cheeneseInput" placeholder="Enter text..."></textarea>
+    <input type="number" id="shift" value="1"> Shift (use -1 for back-translate)
+    <button onclick="translateCheenese()">Translate</button>
+    <div class="output" id="cheeneseOutput"></div>
   </div>
 
-  <!-- Cataneese -->
-  <div class="container" id="cataneese">
-    <h2>🐱 Cataneese (Assembly Style)</h2>
-    <textarea id="cataneeseInput" placeholder="Enter text..."></textarea><br>
-    <button class="action" onclick="cataneeseTranslate()">Assemble</button>
-    <div class="result" id="cataneeseResult"></div>
-
-    <h3>🔄 Cataneese Decoder</h3>
-    <textarea id="cataneeseDecodeInput" placeholder="Paste Cataneese code..."></textarea><br>
-    <button class="action" onclick="cataneeseDecode()">Decode</button>
-    <div class="result" id="cataneeseDecodedResult"></div>
+  <!-- Cataneese Translator -->
+  <div id="cataneese" class="translator">
+    <h2>Cataneese (Assembly Style)</h2>
+    <textarea id="cataneeseInput" placeholder="Enter text..."></textarea>
+    <button onclick="encodeCataneese()">Encode</button>
+    <button onclick="decodeCataneese()">Decode</button>
+    <div class="output" id="cataneeseOutput"></div>
   </div>
 
   <script>
-    function showMode(mode) {
-      document.querySelectorAll('.container').forEach(c => c.style.display = "none");
-      document.getElementById(mode).style.display = "block";
+    function showTranslator(name) {
+      document.querySelectorAll('.translator').forEach(el => el.style.display = 'none');
+      document.getElementById(name).style.display = 'block';
     }
 
-    // Cheenese Translator
-    function cheeneseTranslate(direction) {
-      const text = document.getElementById("cheeneseInput").value;
-      let shift = parseInt(document.getElementById("cheeneseShift").value) * direction;
-      let result = "";
-
-      for (let char of text) {
-        if (/[a-z]/.test(char)) {
-          result += String.fromCharCode(((char.charCodeAt(0) - 97 + shift + 26*1000) % 26) + 97);
-        } else if (/[A-Z]/.test(char)) {
-          result += String.fromCharCode(((char.charCodeAt(0) - 65 + shift + 26*1000) % 26) + 65);
-        } else {
-          result += char;
-        }
+    // ===== Cheenese =====
+    function shiftChar(char, shift) {
+      if (/[a-z]/.test(char)) {
+        return String.fromCharCode((char.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
+      } else if (/[A-Z]/.test(char)) {
+        return String.fromCharCode((char.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
       }
-
-      document.getElementById("cheeneseResult").innerText = "Result:\n" + result;
+      return char;
     }
 
-    // Cataneese Encoder
-    function cataneeseTranslate() {
-      const text = document.getElementById("cataneeseInput").value;
+    function translateCheenese() {
+      let text = document.getElementById("cheeneseInput").value;
+      let shift = parseInt(document.getElementById("shift").value);
       let result = "";
-
       for (let char of text) {
-        if (/[a-z]/.test(char)) {
-          let num = char.charCodeAt(0) - 96;
-          result += `TEXT -> (${num}) [LOWER]\n`;
-        } else if (/[A-Z]/.test(char)) {
-          let num = char.charCodeAt(0) - 64;
-          result += `TEXT -> (${num}) [UPPER]\n`;
-        } else {
-          result += `TEXT -> (${char}) [NON-ALPHA]\n`;
-        }
+        result += shiftChar(char, shift);
       }
-
-      document.getElementById("cataneeseResult").innerText = result.trim();
+      document.getElementById("cheeneseOutput").textContent = result;
     }
 
-    // Cataneese Decoder
-    function cataneeseDecode() {
-      const lines = document.getElementById("cataneeseDecodeInput").value.trim().split("\n");
-      let decoded = "";
+    // ===== Cataneese =====
+    function encodeCataneese() {
+      let text = document.getElementById("cataneeseInput").value;
+      let words = text.split(/\s+/);
+      let lines = words.map(word => {
+        let arr = [];
+        for (let char of word) {
+          if (/[a-z]/.test(char)) {
+            arr.push(`${char.charCodeAt(0) - 96} [LOWER]`);
+          } else if (/[A-Z]/.test(char)) {
+            arr.push(`${char.charCodeAt(0) - 64} [UPPER]`);
+          } else {
+            arr.push(`${char} [NON-ALPHA]`);
+          }
+        }
+        return `TEXT = [${arr.join(", ")}]`;
+      });
+      document.getElementById("cataneeseOutput").textContent = lines.join("\n");
+    }
 
-      for (let line of lines) {
-        let match = line.match(/TEXT -> \((.+?)\) \[(.+?)\]/);
-        if (!match) continue;
+    function decodeCataneese() {
+      let text = document.getElementById("cataneeseInput").value;
+      let lines = text.split("\n");
+      let decoded = lines.map(line => {
+        let inside = line.match(/\[(.*?)\]/g);
+        if (!inside) return "";
+        return inside.map((chunk, i) => {
+          let match = /(\d+|.?) \[(UPPER|LOWER|NON-ALPHA)\]/.exec(chunk.replace(/\[|\]/g, ""));
+          if (!match) return "";
+          let val = match[1], type = match[2];
+          if (type === "UPPER") return String.fromCharCode(parseInt(val) + 64);
+          if (type === "LOWER") return String.fromCharCode(parseInt(val) + 96);
+          return val;
+        }).join("");
+      }).join(" ");
+      document.getElementById("cataneeseOutput").textContent = decoded;
+    }
 
-        let val = match[1];
-        let type = match[2];
-
-        if (type === "LOWER") {
-          decoded += String.fromCharCode(parseInt(val) + 96);
-        } else if (type === "UPPER") {
-          decoded += String.fromCharCode(parseInt(val) + 64);
-        } else if (type === "
+    // default show Cheenese
+    showTranslator('cheenese');
+  </script>
+</body>
+</html>
