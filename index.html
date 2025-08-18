@@ -88,24 +88,24 @@
   </style>
 </head>
 <body>
-  <h1>🧀 Cheenese & 🐱 Cataneese Translator</h1>
+  <h1>🧀 Cheenese &  Cataneese Translator</h1>
   <div class="tabs">
     <button onclick="openTab('cheenese')">🧀 Cheenese</button>
-    <button onclick="openTab('cataneese')">🐱 Cataneese</button>
+    <button onclick="openTab('cataneese')"> Cataneese</button>
   </div>
 
   <!-- Cheenese Tab -->
   <div id="cheenese" class="tab-content">
     <textarea id="cheeneseInput" placeholder="Enter text..."></textarea>
     <div class="action-buttons">
-      <button onclick="pasteText('cheeneseInput')">📋 Paste</button>
+      <button onclick="pasteText('cheeneseInput')"> Paste</button>
       <button onclick="translateCheenese(1)">Encode</button>
       <button onclick="translateCheenese(-1)">Decode</button>
     </div>
     <div id="cheeneseCounter" class="counter">Length: 0</div>
     <pre id="cheeneseOutput"></pre>
     <div class="action-buttons">
-      <button onclick="copyText('cheeneseOutput')">📄 Copy</button>
+      <button onclick="copyText('cheeneseOutput')"> Copy</button>
     </div>
   </div>
 
@@ -113,14 +113,14 @@
   <div id="cataneese" class="tab-content">
     <textarea id="cataneeseInput" placeholder="Enter text..."></textarea>
     <div class="action-buttons">
-      <button onclick="pasteText('cataneeseInput')">📋 Paste</button>
+      <button onclick="pasteText('cataneeseInput')"> Paste</button>
       <button onclick="encodeCataneese()">Encode</button>
       <button onclick="decodeCataneese()">Decode</button>
     </div>
     <div id="cataneeseCounter" class="counter">Length: 0</div>
     <pre id="cataneeseOutput"></pre>
     <div class="action-buttons">
-      <button onclick="copyText('cataneeseOutput')">📄 Copy</button>
+      <button onclick="copyText('cataneeseOutput')"> Copy</button>
     </div>
   </div>
 
@@ -138,10 +138,10 @@
       let text = `Length: ${length}`;
       if (length >= 4000) {
         color = "red";
-        text += " ❌ Cannot send on Discord!";
+        text += "  Cannot send on Discord!";
       } else if (length >= 2000) {
         color = "yellow";
-        text += " ⚠️ Nitro required!";
+        text += " ⚠ Nitro required!";
       }
       counter.style.color = color;
       counter.textContent = text;
