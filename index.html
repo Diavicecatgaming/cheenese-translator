@@ -6,7 +6,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f0f0;
+      background: #1e1e1e;
+      color: #f0f0f0;
       padding: 20px;
     }
     textarea {
@@ -16,8 +17,10 @@
       padding: 10px;
       font-size: 14px;
       border-radius: 6px;
-      border: 1px solid #ccc;
+      border: 1px solid #555;
       resize: vertical;
+      background: #2b2b2b;
+      color: #f0f0f0;
     }
     button {
       margin: 5px;
@@ -26,24 +29,29 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      background: #333;
+      background: #444;
       color: white;
     }
     button:hover {
-      background: #555;
+      background: #666;
     }
     #output {
       margin-top: 15px;
       padding: 10px;
-      background: white;
-      border: 1px solid #ccc;
+      background: #2b2b2b;
+      border: 1px solid #555;
       border-radius: 6px;
       white-space: pre-wrap;
       font-family: monospace;
+      color: #f0f0f0;
     }
     a {
-      color: blue;
+      color: #4ea1ff;
       text-decoration: underline;
+    }
+    label {
+      margin-left: 10px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -52,6 +60,14 @@
   <textarea id="inputText" placeholder="Type your text here..."></textarea><br>
   <button onclick="encode()">Encode</button>
   <button onclick="decode()">Decode</button>
+  
+  <label>
+    <input type="radio" name="decodeMode" value="inline" checked> Inline words
+  </label>
+  <label>
+    <input type="radio" name="decodeMode" value="lines"> One word per line
+  </label>
+
   <div id="output"></div>
 
   <script>
@@ -126,7 +142,13 @@
           }
         }
       }
-      document.getElementById("output").innerHTML = decoded.join(" ");
+
+      let mode = document.querySelector('input[name="decodeMode"]:checked').value;
+      if (mode === "lines") {
+        document.getElementById("output").innerHTML = decoded.join("\n");
+      } else {
+        document.getElementById("output").innerHTML = decoded.join(" ");
+      }
     }
   </script>
 </body>
