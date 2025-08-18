@@ -2,57 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🧀 Cursed Translator</title>
+  <title>Cheenese Translator</title>
   <style>
     body {
-      background-color: black;
-      color: lime;
-      font-family: monospace;
-      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
     }
     textarea {
-      width: 90%;
-      height: 150px;
-      background-color: #111;
-      color: lime;
-      border: 1px solid lime;
-      margin: 10px;
+      width: 100%;
+      height: 120px;
+      margin-bottom: 10px;
       padding: 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: vertical;
     }
     button {
-      background: black;
-      color: lime;
-      border: 1px solid lime;
-      padding: 10px;
       margin: 5px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
+      background: #333;
+      color: white;
     }
-    .output {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      border: 1px solid lime;
+    button:hover {
+      background: #555;
+    }
+    #output {
+      margin-top: 15px;
       padding: 10px;
-      width: 90%;
-      margin: 10px auto;
-      background: #111;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      font-family: monospace;
     }
-    a { color: cyan; }
+    a {
+      color: blue;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <h1>🧀 Cursed Translator</h1>
-  
-  <textarea id="inputText" placeholder="Enter text here..."></textarea><br>
-  <button onclick="pasteText()">Paste</button>
-  <button onclick="copyOutput()">Copy Output</button>
+  <h2>🧀 Cheenese Translator</h2>
+  <textarea id="inputText" placeholder="Type your text here..."></textarea><br>
   <button onclick="encode()">Encode</button>
   <button onclick="decode()">Decode</button>
-  
-  <div id="output" class="output"></div>
-  
+  <div id="output"></div>
+
   <script>
     function isLink(word) {
-      return word.startsWith("http://") || word.startsWith("https://");
+      return /^https?:\/\/\S+$/i.test(word);
     }
 
     function encode() {
@@ -69,6 +73,8 @@
         for (let word of words) {
           if (isLink(word)) {
             encoded.push("LINK = (" + word + ")");
+          } else if (word === "🧀Cheenese™" || word === "🧀") {
+            encoded.push("TEXT = [🧀]");
           } else {
             let encodedWord = word.split("").map(ch => {
               if (/[a-z]/.test(ch)) {
@@ -78,7 +84,7 @@
               } else if (ch === "🧀") {
                 return "🧀";
               } else {
-                return ch; // ignore other emojis/symbols
+                return ch;
               }
             }).join(" ");
             encoded.push("TEXT = [" + encodedWord + "]");
@@ -95,39 +101,32 @@
 
       for (let line of lines) {
         if (line.startsWith("SPECIAL = [LINE BREAK]")) {
-          decoded.push("");
+          decoded.push("\n");
         } else if (line.startsWith("LINK = (")) {
           let link = line.match(/LINK = \((.*?)\)/)[1];
           decoded.push('<a href="' + link + '" target="_blank">' + link + '</a>');
         } else if (line.startsWith("TEXT = [")) {
           let inside = line.match(/TEXT = \[(.*)\]/)[1];
-          let parts = inside.split(" ");
-          let word = parts.map(p => {
-            if (p.endsWith("[LOW]")) {
-              return String.fromCharCode(parseInt(p) + 96);
-            } else if (p.endsWith("[UP]")) {
-              return String.fromCharCode(parseInt(p) + 64);
-            } else if (p === "🧀") {
-              return "🧀";
-            } else {
-              return p;
-            }
-          }).join("");
-          decoded.push(word);
+          if (inside === "🧀") {
+            decoded.push("🧀Cheenese™");
+          } else {
+            let parts = inside.split(" ");
+            let word = parts.map(p => {
+              if (p.endsWith("[LOW]")) {
+                return String.fromCharCode(parseInt(p) + 96);
+              } else if (p.endsWith("[UP]")) {
+                return String.fromCharCode(parseInt(p) + 64);
+              } else if (p === "🧀") {
+                return "🧀Cheenese™";
+              } else {
+                return p;
+              }
+            }).join("");
+            decoded.push(word);
+          }
         }
       }
       document.getElementById("output").innerHTML = decoded.join(" ");
-    }
-
-    function copyOutput() {
-      let text = document.getElementById("output").innerText;
-      navigator.clipboard.writeText(text);
-    }
-
-    function pasteText() {
-      navigator.clipboard.readText().then(text => {
-        document.getElementById("inputText").value = text;
-      });
     }
   </script>
 </body>
