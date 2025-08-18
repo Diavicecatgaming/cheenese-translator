@@ -1,163 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>🧀 Cursed Translator</title>
-<link rel="icon" type="image/png" href="icon.png">
-<style>
-  body { background:#000; color:#00ff00; font-family: monospace; text-align:center; padding:20px; }
-  h1 { font-size:28px; margin-bottom:10px; }
-  .tabs { margin-bottom:20px; }
-  .tabs button {
-    background:#001900; color:#00ff00; border:1px solid #00aa00; padding:10px 20px; margin:0 8px; border-radius:12px; cursor:pointer;
-    font-size:16px; font-weight:bold; transition: all 0.2s ease-in-out; box-shadow: 0 4px 8px rgba(0,255,0,0.2);
-  }
-  .tabs button:hover { background:#003000; transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,255,0,0.4);}
-  .tabs button:active { transform:translateY(0); box-shadow:0 2px 6px rgba(0,255,0,0.2);}
-  .tab-content { display:none; }
-  textarea { width:80%; height:120px; background:#001900; color:#00ff00; border:1px solid #00aa00; border-radius:8px; padding:10px; margin-bottom:10px;}
-  .action-buttons { margin-bottom:20px; }
-  .action-buttons button { background:#002200; color:#00ff00; border:1px solid #00aa00; padding:6px 14px; margin:4px; border-radius:6px; cursor:pointer; font-size:14px; transition: all 0.2s ease-in-out;}
-  .action-buttons button:hover { background:#004000; }
-  .counter { margin:10px; font-weight:bold; }
-  pre { background:#001900; border:1px solid #00aa00; border-radius:8px; padding:10px; text-align:left; width:80%; margin:auto; overflow-x:auto; white-space:pre-wrap; word-wrap:break-word; }
-</style>
+  <meta charset="UTF-8">
+  <title>Cursed Translator Hub 🧀</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: monospace;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    textarea, pre {
+      width: 100%;
+      min-height: 120px;
+      margin: 10px 0;
+      background: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 10px;
+    }
+    button {
+      background: #111;
+      color: #0f0;
+      border: 1px solid #0f0;
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background: #0f0;
+      color: #000;
+    }
+    .counter {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    .green { color: #0f0; }
+    .yellow { color: yellow; }
+    .red { color: red; }
+    a {
+      color: cyan;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-<h1>🧀 Cursed Translator</h1>
-<div class="tabs">
-  <button onclick="openTab('cheenese')">Cheenese</button>
-  <button onclick="openTab('cataneese')">Cataneese</button>
-</div>
+  <h1>🧀 Cursed Translator Hub</h1>
 
-<!-- Cheenese Tab -->
-<div id="cheenese" class="tab-content">
-  <textarea id="cheeneseInput" placeholder="Enter text..."></textarea>
-  <div class="action-buttons">
-    <button onclick="pasteText('cheeneseInput')">Paste</button>
-    <button onclick="translateCheenese(1)">Encode</button>
-    <button onclick="translateCheenese(-1)">Decode</button>
-  </div>
-  <div id="cheeneseCounter" class="counter">Length: 0</div>
-  <pre id="cheeneseOutput"></pre>
-  <div class="action-buttons">
-    <button onclick="copyText('cheeneseOutput')">Copy</button>
-  </div>
-</div>
+  <textarea id="input" placeholder="Enter text here..."></textarea><br>
+  <button onclick="pasteText()">Paste</button>
+  <button onclick="copyOutput()">Copy Output</button>
+  <button onclick="setMode('cheenese')">Cheenese</button>
+  <button onclick="setMode('cataneese')">Cataneese</button>
+  <button onclick="encode()">Encode</button>
+  <button onclick="decode()">Decode</button>
 
-<!-- Cataneese Tab -->
-<div id="cataneese" class="tab-content">
-  <textarea id="cataneeseInput" placeholder="Enter text..."></textarea>
-  <div class="action-buttons">
-    <button onclick="pasteText('cataneeseInput')">Paste</button>
-    <button onclick="encodeCataneese()">Encode</button>
-    <button onclick="decodeCataneese()">Decode</button>
-  </div>
-  <div id="cataneeseCounter" class="counter">Length: 0</div>
-  <pre id="cataneeseOutput"></pre>
-  <div class="action-buttons">
-    <button onclick="copyText('cataneeseOutput')">Copy</button>
-  </div>
-</div>
+  <pre id="output"></pre>
+  <div id="counter" class="counter"></div>
 
-<script>
-function openTab(tabName) {
-  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
-  document.getElementById(tabName).style.display='block';
-}
-openTab('cheenese');
+  <script>
+    let mode = 'cheenese';
 
-function updateCounter(id,counterId){
-  const length=document.getElementById(id).value.length;
-  const counter=document.getElementById(counterId);
-  let color="#00ff00"; let text=`Length: ${length}`;
-  if(length>=4000){color="red"; text+= " ❌ Cannot send on Discord!";}
-  else if(length>=2000){color="yellow"; text+= " ⚠️ Nitro required!";}
-  counter.style.color=color; counter.textContent=text;
-}
-
-// Clipboard
-async function copyText(outputId){await navigator.clipboard.writeText(document.getElementById(outputId).textContent); alert("Copied!");}
-async function pasteText(inputId){const text=await navigator.clipboard.readText(); document.getElementById(inputId).value=text; updateCounter(inputId,inputId==="cheeneseInput"?"cheeneseCounter":"cataneeseCounter");}
-
-// Cheenese Translator
-function shiftChar(c,shift){
-  if(/[a-z]/.test(c)) return String.fromCharCode((c.charCodeAt(0)-97+shift+26)%26+97);
-  if(/[A-Z]/.test(c)) return String.fromCharCode((c.charCodeAt(0)-65+shift+26)%26+65);
-  return c;
-}
-function translateCheenese(shift){
-  const input=document.getElementById("cheeneseInput").value;
-  let result="";
-  const urlPattern=/(https?:\/\/[^\s]+)/g;
-  let lastIndex=0, match;
-  while((match=urlPattern.exec(input))!==null){
-    for(let i=lastIndex;i<match.index;i++) result+=shiftChar(input[i],shift);
-    result+=match[0]; lastIndex=match.index+match[0].length;
-  }
-  for(let i=lastIndex;i<input.length;i++) result+=shiftChar(input[i],shift);
-  document.getElementById("cheeneseOutput").innerText=result;
-  updateCounter("cheeneseInput","cheeneseCounter");
-}
-
-// Cataneese Translator
-function isURL(str){return /(https?:\/\/[^\s]+)/.test(str);}
-function encodeCataneese(){
-  const input=document.getElementById("cataneeseInput").value.split(/\s+/);
-  let result=[];
-  input.forEach(word=>{
-    if(isURL(word)) result.push(`LINK = (${word})`);
-    else{
-      let arr=[];
-      for(let char of word){
-        if(/[a-zA-Z]/.test(char)){
-          let num=char.toLowerCase().charCodeAt(0)-96;
-          arr.push(`${num} [${/[A-Z]/.test(char)?"UPPER":"LOWER"}]`);
-        }else arr.push(`${char} [NON-ALPHA]`);
-      }
-      result.push(`TEXT = [${arr.join(", ")}]`);
+    function setMode(m) {
+      mode = m;
+      alert("Mode switched to " + m);
     }
-  });
-  document.getElementById("cataneeseOutput").innerText=result.join("\n");
-  updateCounter("cataneeseInput","cataneeseCounter");
-}
 
-function decodeCataneese(){
-  const input=document.getElementById("cataneeseInput").value.split("\n");
-  let result=[];
-  input.forEach(line=>{
-    if(line.startsWith("LINK =")){
-      const link=line.match(/LINK = \((.*)\)/)[1];
-      result.push(link);
-    } else if(line.startsWith("SPECIAL = [LINE BREAK]")){
-      result.push("\n");
-    } else {
-      let matches=line.match(/\d+ \[UPPER\]|\d+ \[LOWER\]|. \[NON-ALPHA\]/g);
-      if(matches){
-        let word="";
-        matches.forEach(token=>{
-          if(token.includes("[UPPER]")) word+=String.fromCharCode(parseInt(token)+64);
-          else if(token.includes("[LOWER]")) word+=String.fromCharCode(parseInt(token)+96);
-          else if(token.includes("[NON-ALPHA]")) word+=token[0];
-        });
-        result.push(word);
+    function pasteText() {
+      navigator.clipboard.readText().then(text => {
+        document.getElementById("input").value = text;
+      });
+    }
+
+    function copyOutput() {
+      const out = document.getElementById("output").innerText;
+      navigator.clipboard.writeText(out);
+      alert("Output copied!");
+    }
+
+    // Count and color output length
+    function updateCounter(text) {
+      const counter = document.getElementById("counter");
+      const len = text.length;
+      if (len < 2000) {
+        counter.textContent = len + " characters (OK)";
+        counter.className = "counter green";
+      } else if (len < 4000) {
+        counter.textContent = len + " characters (Need Discord Nitro)";
+        counter.className = "counter yellow";
+      } else {
+        counter.textContent = len + " characters (TOO LONG for Discord)";
+        counter.className = "counter red";
       }
     }
-  });
 
-  // join with space, but preserve line breaks
-  let finalText="";
-  result.forEach((v, i)=>{
-    if(v === "\n") finalText += "\n";
-    else {
-      if(i>0 && result[i-1] !== "\n") finalText += " ";
-      finalText += v;
+    // Cheenese shift logic
+    function shiftWordCheenese(word, shift) {
+      if (/^https?:\/\//.test(word)) return word; // leave links alone
+      let result = "";
+      for (let char of word) {
+        if (/[a-z]/.test(char)) {
+          result += String.fromCharCode((char.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
+        } else if (/[A-Z]/.test(char)) {
+          result += String.fromCharCode((char.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
+        } else {
+          result += char;
+        }
+      }
+      return result;
     }
-  });
 
-  document.getElementById("cataneeseOutput").innerText = finalText;
-  updateCounter("cataneeseInput","cataneeseCounter");
-}
-</script>
+    // Cataneese encode
+    function encodeCataneese(text) {
+      return text.split("\n").map(line => {
+        if (line.startsWith("SPECIAL = [LINE BREAK]")) return "SPECIAL = [LINE BREAK]";
+        return "TEXT = [" + line.split(" ").map(word => {
+          if (/^https?:\/\//.test(word)) {
+            return `LINK = (${word})`;
+          }
+          return word.split("").map(ch => {
+            if (/[a-z]/.test(ch)) return (ch.charCodeAt(0) - 96) + "[LOW]";
+            if (/[A-Z]/.test(ch)) return (ch.charCodeAt(0) - 64) + "[UP]";
+            return ch;
+          }).join(" ");
+        }).join(" ") + "]";
+      }).join("\n");
+    }
+
+    // Cataneese decode
+    function decodeCataneese(text) {
+      return text.split("\n").map(line => {
+        if (line.startsWith("SPECIAL = [LINE BREAK]")) return "";
+        let content = line.replace(/^TEXT = \[|\]$/g, "").trim();
+        return content.split(" ").map(token => {
+          if (token.startsWith("LINK")) {
+            return token.match(/\((.*?)\)/)[1];
+          }
+          let match = token.match(/^(\d+)(\[UP\]|\[LOW\])$/);
+          if (match) {
+            let num = parseInt(match[1]);
+            let caseTag = match[2];
+            if (caseTag === "[UP]") return String.fromCharCode(num + 64);
+            if (caseTag === "[LOW]") return String.fromCharCode(num + 96);
+          }
+          return token;
+        }).join(" ");
+      }).join("\n");
+    }
+
+    function encode() {
+      let text = document.getElementById("input").value;
+      let output = "";
+      if (mode === 'cheenese') {
+        output = text.split(/\s+/).map(w => shiftWordCheenese(w, 1)).join(" ");
+      } else if (mode === 'cataneese') {
+        output = encodeCataneese(text);
+      }
+      document.getElementById("output").innerHTML = makeLinksClickable(output);
+      updateCounter(output);
+    }
+
+    function decode() {
+      let text = document.getElementById("input").value;
+      let output = "";
+      if (mode === 'cheenese') {
+        output = text.split(/\s+/).map(w => shiftWordCheenese(w, -1)).join(" ");
+      } else if (mode === 'cataneese') {
+        output = decodeCataneese(text);
+      }
+      document.getElementById("output").innerHTML = makeLinksClickable(output);
+      updateCounter(output);
+    }
+
+    // turn links clickable in output
+    function makeLinksClickable(text) {
+      return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+    }
+  </script>
 </body>
 </html>
