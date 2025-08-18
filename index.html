@@ -67,13 +67,13 @@
 </head>
 <body>
   <div class="mode-buttons">
-    <button onclick="showMode('cheenese')">🧀 Cheenese</button>
+    <button onclick="showMode('cheenese')">🥢 Cheenese</button>
     <button onclick="showMode('cataneese')">🐱 Cataneese</button>
   </div>
 
   <!-- Cheenese -->
   <div class="container" id="cheenese">
-    <h2>🧀 Cheenese (Caesar Shift)</h2>
+    <h2>🥢 Cheenese (Caesar Shift)</h2>
     <textarea id="cheeneseInput" placeholder="Enter text..."></textarea><br>
     <input type="number" id="cheeneseShift" value="1">
     <button class="action" onclick="cheeneseTranslate(1)">Shift Forward</button>
@@ -87,6 +87,11 @@
     <textarea id="cataneeseInput" placeholder="Enter text..."></textarea><br>
     <button class="action" onclick="cataneeseTranslate()">Assemble</button>
     <div class="result" id="cataneeseResult"></div>
+
+    <h3>🔄 Cataneese Decoder</h3>
+    <textarea id="cataneeseDecodeInput" placeholder="Paste Cataneese code..."></textarea><br>
+    <button class="action" onclick="cataneeseDecode()">Decode</button>
+    <div class="result" id="cataneeseDecodedResult"></div>
   </div>
 
   <script>
@@ -114,7 +119,7 @@
       document.getElementById("cheeneseResult").innerText = "Result:\n" + result;
     }
 
-    // Cataneese Translator
+    // Cataneese Encoder
     function cataneeseTranslate() {
       const text = document.getElementById("cataneeseInput").value;
       let result = "";
@@ -134,8 +139,20 @@
       document.getElementById("cataneeseResult").innerText = result.trim();
     }
 
-    // Default mode
-    showMode("cheenese");
-  </script>
-</body>
-</html>
+    // Cataneese Decoder
+    function cataneeseDecode() {
+      const lines = document.getElementById("cataneeseDecodeInput").value.trim().split("\n");
+      let decoded = "";
+
+      for (let line of lines) {
+        let match = line.match(/TEXT -> \((.+?)\) \[(.+?)\]/);
+        if (!match) continue;
+
+        let val = match[1];
+        let type = match[2];
+
+        if (type === "LOWER") {
+          decoded += String.fromCharCode(parseInt(val) + 96);
+        } else if (type === "UPPER") {
+          decoded += String.fromCharCode(parseInt(val) + 64);
+        } else if (type === "
