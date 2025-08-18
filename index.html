@@ -2,183 +2,132 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cursed Translator Hub 🧀</title>
+  <title>🧀 Cursed Translator</title>
   <style>
     body {
-      background-color: #000;
-      color: #00ff00;
+      background-color: black;
+      color: lime;
       font-family: monospace;
-      padding: 20px;
-    }
-    h1 {
       text-align: center;
     }
-    textarea, pre {
-      width: 100%;
-      min-height: 120px;
-      margin: 10px 0;
-      background: #111;
-      color: #0f0;
-      border: 1px solid #0f0;
+    textarea {
+      width: 90%;
+      height: 150px;
+      background-color: #111;
+      color: lime;
+      border: 1px solid lime;
+      margin: 10px;
       padding: 10px;
     }
     button {
-      background: #111;
-      color: #0f0;
-      border: 1px solid #0f0;
-      padding: 10px 15px;
+      background: black;
+      color: lime;
+      border: 1px solid lime;
+      padding: 10px;
       margin: 5px;
       cursor: pointer;
-      border-radius: 5px;
     }
-    button:hover {
-      background: #0f0;
-      color: #000;
+    .output {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      border: 1px solid lime;
+      padding: 10px;
+      width: 90%;
+      margin: 10px auto;
+      background: #111;
     }
-    .counter {
-      font-weight: bold;
-      margin-top: 5px;
-    }
-    .green { color: #0f0; }
-    .yellow { color: yellow; }
-    .red { color: red; }
-    a {
-      color: cyan;
-      text-decoration: underline;
-    }
+    a { color: cyan; }
   </style>
 </head>
 <body>
-  <h1>🧀 Cursed Translator Hub</h1>
-
-  <textarea id="input" placeholder="Enter text here..."></textarea><br>
+  <h1>🧀 Cursed Translator</h1>
+  
+  <textarea id="inputText" placeholder="Enter text here..."></textarea><br>
   <button onclick="pasteText()">Paste</button>
   <button onclick="copyOutput()">Copy Output</button>
-  <button onclick="setMode('cheenese')">Cheenese</button>
-  <button onclick="setMode('cataneese')">Cataneese</button>
   <button onclick="encode()">Encode</button>
   <button onclick="decode()">Decode</button>
-
-  <pre id="output"></pre>
-  <div id="counter" class="counter"></div>
-
+  
+  <div id="output" class="output"></div>
+  
   <script>
-    let mode = 'cheenese';
+    function isLink(word) {
+      return word.startsWith("http://") || word.startsWith("https://");
+    }
 
-    function setMode(m) {
-      mode = m;
-      alert("Mode switched to " + m);
+    function encode() {
+      let text = document.getElementById("inputText").value;
+      let lines = text.split("\n");
+      let encoded = [];
+
+      for (let line of lines) {
+        if (line.trim() === "") {
+          encoded.push("SPECIAL = [LINE BREAK]");
+          continue;
+        }
+        let words = line.split(" ");
+        for (let word of words) {
+          if (isLink(word)) {
+            encoded.push("LINK = (" + word + ")");
+          } else {
+            let encodedWord = word.split("").map(ch => {
+              if (/[a-z]/.test(ch)) {
+                return (ch.charCodeAt(0) - 96) + "[LOW]";
+              } else if (/[A-Z]/.test(ch)) {
+                return (ch.charCodeAt(0) - 64) + "[UP]";
+              } else if (ch === "🧀") {
+                return "🧀";
+              } else {
+                return ch; // ignore other emojis/symbols
+              }
+            }).join(" ");
+            encoded.push("TEXT = [" + encodedWord + "]");
+          }
+        }
+      }
+      document.getElementById("output").innerText = encoded.join("\n");
+    }
+
+    function decode() {
+      let text = document.getElementById("output").innerText;
+      let lines = text.split("\n");
+      let decoded = [];
+
+      for (let line of lines) {
+        if (line.startsWith("SPECIAL = [LINE BREAK]")) {
+          decoded.push("");
+        } else if (line.startsWith("LINK = (")) {
+          let link = line.match(/LINK = \((.*?)\)/)[1];
+          decoded.push('<a href="' + link + '" target="_blank">' + link + '</a>');
+        } else if (line.startsWith("TEXT = [")) {
+          let inside = line.match(/TEXT = \[(.*)\]/)[1];
+          let parts = inside.split(" ");
+          let word = parts.map(p => {
+            if (p.endsWith("[LOW]")) {
+              return String.fromCharCode(parseInt(p) + 96);
+            } else if (p.endsWith("[UP]")) {
+              return String.fromCharCode(parseInt(p) + 64);
+            } else if (p === "🧀") {
+              return "🧀";
+            } else {
+              return p;
+            }
+          }).join("");
+          decoded.push(word);
+        }
+      }
+      document.getElementById("output").innerHTML = decoded.join(" ");
+    }
+
+    function copyOutput() {
+      let text = document.getElementById("output").innerText;
+      navigator.clipboard.writeText(text);
     }
 
     function pasteText() {
       navigator.clipboard.readText().then(text => {
-        document.getElementById("input").value = text;
+        document.getElementById("inputText").value = text;
       });
-    }
-
-    function copyOutput() {
-      const out = document.getElementById("output").innerText;
-      navigator.clipboard.writeText(out);
-      alert("Output copied!");
-    }
-
-    // Count and color output length
-    function updateCounter(text) {
-      const counter = document.getElementById("counter");
-      const len = text.length;
-      if (len < 2000) {
-        counter.textContent = len + " characters (OK)";
-        counter.className = "counter green";
-      } else if (len < 4000) {
-        counter.textContent = len + " characters (Need Discord Nitro)";
-        counter.className = "counter yellow";
-      } else {
-        counter.textContent = len + " characters (TOO LONG for Discord)";
-        counter.className = "counter red";
-      }
-    }
-
-    // Cheenese shift logic
-    function shiftWordCheenese(word, shift) {
-      if (/^https?:\/\//.test(word)) return word; // leave links alone
-      let result = "";
-      for (let char of word) {
-        if (/[a-z]/.test(char)) {
-          result += String.fromCharCode((char.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
-        } else if (/[A-Z]/.test(char)) {
-          result += String.fromCharCode((char.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
-        } else {
-          result += char;
-        }
-      }
-      return result;
-    }
-
-    // Cataneese encode
-    function encodeCataneese(text) {
-      return text.split("\n").map(line => {
-        if (line.startsWith("SPECIAL = [LINE BREAK]")) return "SPECIAL = [LINE BREAK]";
-        return "TEXT = [" + line.split(" ").map(word => {
-          if (/^https?:\/\//.test(word)) {
-            return `LINK = (${word})`;
-          }
-          return word.split("").map(ch => {
-            if (/[a-z]/.test(ch)) return (ch.charCodeAt(0) - 96) + "[LOW]";
-            if (/[A-Z]/.test(ch)) return (ch.charCodeAt(0) - 64) + "[UP]";
-            return ch;
-          }).join(" ");
-        }).join(" ") + "]";
-      }).join("\n");
-    }
-
-    // Cataneese decode
-    function decodeCataneese(text) {
-      return text.split("\n").map(line => {
-        if (line.startsWith("SPECIAL = [LINE BREAK]")) return "";
-        let content = line.replace(/^TEXT = \[|\]$/g, "").trim();
-        return content.split(" ").map(token => {
-          if (token.startsWith("LINK")) {
-            return token.match(/\((.*?)\)/)[1];
-          }
-          let match = token.match(/^(\d+)(\[UP\]|\[LOW\])$/);
-          if (match) {
-            let num = parseInt(match[1]);
-            let caseTag = match[2];
-            if (caseTag === "[UP]") return String.fromCharCode(num + 64);
-            if (caseTag === "[LOW]") return String.fromCharCode(num + 96);
-          }
-          return token;
-        }).join(" ");
-      }).join("\n");
-    }
-
-    function encode() {
-      let text = document.getElementById("input").value;
-      let output = "";
-      if (mode === 'cheenese') {
-        output = text.split(/\s+/).map(w => shiftWordCheenese(w, 1)).join(" ");
-      } else if (mode === 'cataneese') {
-        output = encodeCataneese(text);
-      }
-      document.getElementById("output").innerHTML = makeLinksClickable(output);
-      updateCounter(output);
-    }
-
-    function decode() {
-      let text = document.getElementById("input").value;
-      let output = "";
-      if (mode === 'cheenese') {
-        output = text.split(/\s+/).map(w => shiftWordCheenese(w, -1)).join(" ");
-      } else if (mode === 'cataneese') {
-        output = decodeCataneese(text);
-      }
-      document.getElementById("output").innerHTML = makeLinksClickable(output);
-      updateCounter(output);
-    }
-
-    // turn links clickable in output
-    function makeLinksClickable(text) {
-      return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
     }
   </script>
 </body>
