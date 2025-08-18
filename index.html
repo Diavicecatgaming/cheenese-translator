@@ -3,160 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <title>Cursed Translator</title>
-  <link rel="icon" href="icon.png" type="image/png">
+  <link rel="icon" type="image/png" href="icon.png">
   <style>
     body {
-      margin: 0;
-      font-family: monospace;
-      background: black;
+      font-family: "Courier New", monospace;
+      background-color: #000;
       color: #00ff00;
+      text-align: center;
+      padding: 20px;
     }
 
     .tabs {
-      text-align: center;
-      margin: 20px 0;
+      margin-bottom: 20px;
     }
 
     .tabs button {
-      background: black;
+      background: linear-gradient(135deg, #003300, #004400);
       color: #00ff00;
-      border: 1px solid #00ff00;
+      border: 1px solid #00aa00;
       padding: 12px 24px;
       margin: 0 8px;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 16px;
       font-weight: bold;
       transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 8px rgba(0,255,0,0.3);
     }
 
     .tabs button:hover {
-      background: #003300;
+      background: linear-gradient(135deg, #004400, #005500);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,255,0,0.4);
     }
 
     .tabs button:active {
-      background: #005500;
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(0,255,0,0.3);
     }
 
     .tab-content {
       display: none;
-      text-align: center;
-    }
-
-    .tab-content.active {
-      display: block;
+      margin-top: 20px;
     }
 
     textarea, input {
-      background: black;
+      background-color: #000;
       color: #00ff00;
-      border: 1px solid #00ff00;
-      border-radius: 6px;
+      border: 1px solid #00aa00;
       padding: 10px;
-      font-family: monospace;
-      width: 80%;
-      max-width: 600px;
-    }
-
-    textarea {
-      height: 120px;
-      resize: none;
+      width: 90%;
+      margin-bottom: 10px;
+      font-size: 14px;
     }
 
     pre {
-      background: black;
-      border: 1px solid #00ff00;
-      padding: 10px;
-      margin-top: 10px;
-      display: inline-block;
       text-align: left;
+      padding: 10px;
+      border: 1px solid #00aa00;
+      background: #001100;
+      color: #00ff00;
+      overflow-x: auto;
       white-space: pre-wrap;
       word-wrap: break-word;
     }
 
     .counter {
-      margin-top: 10px;
       font-weight: bold;
+      margin-top: 8px;
     }
 
-    .warning {
-      color: yellow;
-    }
-
-    .error {
-      color: red;
-    }
+    .green { color: #00ff00; }
+    .yellow { color: #ffff00; }
+    .red { color: #ff0000; }
   </style>
 </head>
 <body>
+  <h1>🥢🧀 Cheenese & 🐱 Cataneese Translator</h1>
+
   <div class="tabs">
-    <button onclick="switchTab('cheenese')">🧀 Cheenese</button>
-    <button onclick="switchTab('cataneese')">🐱 Cataneese</button>
+    <button onclick="openTab('cheenese')">🧀 Cheenese</button>
+    <button onclick="openTab('cataneese')">🐱 Cataneese</button>
   </div>
 
   <!-- Cheenese -->
-  <div id="cheenese" class="tab-content active">
-    <h2>🧀 Cheenese Translator (Caesar Shift)</h2>
-    <input type="number" id="shift" value="1" placeholder="Shift (1 or -1)">
-    <br><br>
-    <textarea id="cheeneseInput" placeholder="Enter text..."></textarea>
-    <br>
+  <div id="cheenese" class="tab-content">
+    <h2>🧀 Cheenese Translator (Caesar Cipher)</h2>
+    <textarea id="cheeneseInput" rows="4" placeholder="Enter text..."></textarea><br>
+    <label>Shift: <input id="shift" type="number" value="1"></label><br>
     <button onclick="translateCheenese()">Translate</button>
+    <button onclick="decodeCheenese()">Decode</button>
+    <h3>Output:</h3>
     <pre id="cheeneseOutput"></pre>
-    <div class="counter" id="cheeneseCounter"></div>
+    <div id="cheeneseCounter" class="counter green">Length: 0</div>
   </div>
 
   <!-- Cataneese -->
   <div id="cataneese" class="tab-content">
     <h2>🐱 Cataneese Translator (Assembly Style)</h2>
-    <textarea id="cataneeseInput" placeholder="Enter text..."></textarea>
-    <br>
+    <textarea id="cataneeseInput" rows="4" placeholder="Enter text..."></textarea><br>
     <button onclick="encodeCataneese()">Encode</button>
     <button onclick="decodeCataneese()">Decode</button>
+    <h3>Output:</h3>
     <pre id="cataneeseOutput"></pre>
-    <div class="counter" id="cataneeseCounter"></div>
+    <div id="cataneeseCounter" class="counter green">Length: 0</div>
   </div>
 
   <script>
-    // Switch tabs
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.getElementById(tab).classList.add('active');
+    function openTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(div => div.style.display = "none");
+      document.getElementById(tabName).style.display = "block";
     }
 
-    // Cheenese Caesar shift
-    function shiftWord(word, shift) {
-      let result = "";
-      for (let char of word) {
-        if (/[a-z]/.test(char)) {
-          result += String.fromCharCode((char.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
-        } else if (/[A-Z]/.test(char)) {
-          result += String.fromCharCode((char.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
-        } else {
-          result += char;
-        }
+    function updateCounter(outputId, counterId) {
+      const text = document.getElementById(outputId).innerText;
+      const len = text.length;
+      const counter = document.getElementById(counterId);
+
+      if (len < 2000) {
+        counter.className = "counter green";
+        counter.innerText = `Length: ${len} ✅ (OK to send)`;
+      } else if (len < 4000) {
+        counter.className = "counter yellow";
+        counter.innerText = `Length: ${len} ⚠️ (Needs Discord Nitro)`;
+      } else {
+        counter.className = "counter red";
+        counter.innerText = `Length: ${len} ❌ (Too long for Discord)`;
       }
-      return result;
+    }
+
+    // Cheenese (Caesar)
+    function shiftChar(char, shift) {
+      if (char >= 'a' && char <= 'z')
+        return String.fromCharCode((char.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
+      if (char >= 'A' && char <= 'Z')
+        return String.fromCharCode((char.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
+      return char;
     }
 
     function translateCheenese() {
-      let input = document.getElementById("cheeneseInput").value;
-      let shift = parseInt(document.getElementById("shift").value);
-      let output = input.split(/\b/).map(word => shiftWord(word, shift)).join("");
-      document.getElementById("cheeneseOutput").textContent = output;
-      updateCounter("cheeneseCounter", output.length);
+      const input = document.getElementById("cheeneseInput").value;
+      const shift = parseInt(document.getElementById("shift").value) || 1;
+      let result = "";
+      for (let char of input) result += shiftChar(char, shift);
+      document.getElementById("cheeneseOutput").innerText = result;
+      updateCounter("cheeneseOutput", "cheeneseCounter");
     }
 
-    // Cataneese encode
+    function decodeCheenese() {
+      const input = document.getElementById("cheeneseInput").value;
+      const shift = parseInt(document.getElementById("shift").value) || 1;
+      let result = "";
+      for (let char of input) result += shiftChar(char, -shift);
+      document.getElementById("cheeneseOutput").innerText = result;
+      updateCounter("cheeneseOutput", "cheeneseCounter");
+    }
+
+    // Cataneese (Assembly style)
     function encodeCataneese() {
-      let input = document.getElementById("cataneeseInput").value;
-      let words = input.split(/\s+/);
-      let output = words.map(word => {
+      const input = document.getElementById("cataneeseInput").value;
+      const words = input.split(/\s+/);
+      let result = words.map(word => {
         let arr = [];
         for (let char of word) {
           if (/[a-zA-Z]/.test(char)) {
-            let num = char.toLowerCase().charCodeAt(0) - 96;
-            let caseTag = /[A-Z]/.test(char) ? "[UPPER]" : "[LOWER]";
+            let num = char.toUpperCase().charCodeAt(0) - 64;
+            let caseTag = (char === char.toUpperCase()) ? "[UPPER]" : "[LOWER]";
             arr.push(`${num} ${caseTag}`);
           } else {
             arr.push(`${char} [NON-ALPHA]`);
@@ -164,48 +176,34 @@
         }
         return `TEXT = [${arr.join(", ")}]`;
       }).join("\n");
-      document.getElementById("cataneeseOutput").textContent = output;
-      updateCounter("cataneeseCounter", output.length);
+
+      document.getElementById("cataneeseOutput").innerText = result;
+      updateCounter("cataneeseOutput", "cataneeseCounter");
     }
 
-    // Cataneese decode
     function decodeCataneese() {
-      let input = document.getElementById("cataneeseInput").value;
-      let lines = input.split("\n");
-      let output = lines.map(line => {
-        let match = line.match(/\[(.*?)\]/g);
-        if (!match) return "";
-        let parts = line.match(/(\d+ \[UPPER\]|\d+ \[LOWER\]|. \[NON-ALPHA\])/g) || [];
-        return parts.map(part => {
-          if (part.includes("[UPPER]")) {
-            let num = parseInt(part);
+      const input = document.getElementById("cataneeseInput").value.split("\n");
+      let result = input.map(line => {
+        const matches = line.match(/\d+ \[UPPER\]|\d+ \[LOWER\]|. \[NON-ALPHA\]/g) || [];
+        return matches.map(token => {
+          if (token.includes("[UPPER]")) {
+            let num = parseInt(token);
             return String.fromCharCode(num + 64);
-          } else if (part.includes("[LOWER]")) {
-            let num = parseInt(part);
+          } else if (token.includes("[LOWER]")) {
+            let num = parseInt(token);
             return String.fromCharCode(num + 96);
           } else {
-            return part[0];
+            return token[0];
           }
         }).join("");
       }).join(" ");
-      document.getElementById("cataneeseOutput").textContent = output;
-      updateCounter("cataneeseCounter", output.length);
+
+      document.getElementById("cataneeseOutput").innerText = result;
+      updateCounter("cataneeseOutput", "cataneeseCounter");
     }
 
-    // Length counter
-    function updateCounter(id, length) {
-      let counter = document.getElementById(id);
-      if (length <= 2000) {
-        counter.textContent = `Length: ${length} ✅ OK`;
-        counter.className = "counter";
-      } else if (length <= 4000) {
-        counter.textContent = `Length: ${length} ⚠️ Too long for normal Discord, requires Nitro`;
-        counter.className = "counter warning";
-      } else {
-        counter.textContent = `Length: ${length} ❌ Cannot send on Discord at all`;
-        counter.className = "counter error";
-      }
-    }
+    // Default open Cheenese
+    openTab('cheenese');
   </script>
 </body>
 </html>
