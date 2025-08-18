@@ -121,26 +121,41 @@ function encodeCataneese(){
   document.getElementById("cataneeseOutput").innerText=result.join("\n");
   updateCounter("cataneeseInput","cataneeseCounter");
 }
+
 function decodeCataneese(){
   const input=document.getElementById("cataneeseInput").value.split("\n");
   let result=[];
   input.forEach(line=>{
     if(line.startsWith("LINK =")){
       const link=line.match(/LINK = \((.*)\)/)[1];
-      result.push(link); return;
-    }
-    let matches=line.match(/\d+ \[UPPER\]|\d+ \[LOWER\]|. \[NON-ALPHA\]/g);
-    if(matches){
-      let word="";
-      matches.forEach(token=>{
-        if(token.includes("[UPPER]")) word+=String.fromCharCode(parseInt(token)+64);
-        else if(token.includes("[LOWER]")) word+=String.fromCharCode(parseInt(token)+96);
-        else if(token.includes("[NON-ALPHA]")) word+=token[0];
-      });
-      result.push(word);
+      result.push(link);
+    } else if(line.startsWith("SPECIAL = [LINE BREAK]")){
+      result.push("\n");
+    } else {
+      let matches=line.match(/\d+ \[UPPER\]|\d+ \[LOWER\]|. \[NON-ALPHA\]/g);
+      if(matches){
+        let word="";
+        matches.forEach(token=>{
+          if(token.includes("[UPPER]")) word+=String.fromCharCode(parseInt(token)+64);
+          else if(token.includes("[LOWER]")) word+=String.fromCharCode(parseInt(token)+96);
+          else if(token.includes("[NON-ALPHA]")) word+=token[0];
+        });
+        result.push(word);
+      }
     }
   });
-  document.getElementById("cataneeseOutput").innerText=result.join(" ");
+
+  // join with space, but preserve line breaks
+  let finalText="";
+  result.forEach((v, i)=>{
+    if(v === "\n") finalText += "\n";
+    else {
+      if(i>0 && result[i-1] !== "\n") finalText += " ";
+      finalText += v;
+    }
+  });
+
+  document.getElementById("cataneeseOutput").innerText = finalText;
   updateCounter("cataneeseInput","cataneeseCounter");
 }
 </script>
