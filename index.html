@@ -2,154 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cheenese Translator</title>
+  <title>Cursed Translator</title>
+  <link rel="icon" type="image/png" href="icon.png">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #1e1e1e;
-      color: #f0f0f0;
+      background-color: #0a0a0a;
+      color: #00ff00;
+      font-family: "Courier New", monospace;
+      text-align: center;
+      margin: 0;
       padding: 20px;
     }
-    textarea {
-      width: 100%;
-      height: 120px;
+    h1 {
+      font-size: 28px;
       margin-bottom: 10px;
-      padding: 10px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: 1px solid #555;
-      resize: vertical;
-      background: #2b2b2b;
-      color: #f0f0f0;
     }
-    button {
-      margin: 5px;
+    .mode-toggle button {
+      background-color: black;
+      color: #00ff00;
+      border: 2px solid #00ff00;
       padding: 10px 20px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
+      margin: 5px;
       cursor: pointer;
-      background: #444;
-      color: white;
+      border-radius: 8px;
+      font-weight: bold;
     }
-    button:hover {
-      background: #666;
+    .mode-toggle button.active {
+      background-color: #003300;
     }
-    #output {
-      margin-top: 15px;
+    textarea {
+      width: 90%;
+      height: 120px;
+      background-color: black;
+      color: #00ff00;
+      border: 2px solid #00ff00;
       padding: 10px;
-      background: #2b2b2b;
-      border: 1px solid #555;
-      border-radius: 6px;
-      white-space: pre-wrap;
-      font-family: monospace;
-      color: #f0f0f0;
+      resize: vertical;
+      margin: 10px 0;
     }
-    a {
-      color: #4ea1ff;
-      text-decoration: underline;
+    .controls button {
+      background-color: black;
+      color: #00ff00;
+      border: 2px solid #00ff00;
+      margin: 5px;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-weight: bold;
     }
-    label {
-      margin-left: 10px;
-      font-size: 14px;
+    .counter {
+      font-weight: bold;
+      margin: 10px 0;
     }
+    .counter.green { color: #00ff00; }
+    .counter.yellow { color: yellow; }
+    .counter.red { color: red; }
+    .warning { font-size: 14px; color: red; }
+    a { color: cyan; }
   </style>
 </head>
 <body>
-  <h2>🧀 Cheenese Translator</h2>
-  <textarea id="inputText" placeholder="Type your text here..."></textarea><br>
-  <button onclick="encode()">Encode</button>
-  <button onclick="decode()">Decode</button>
+  <h1>🧀 Cursed Translator 🖥️</h1>
   
-  <label>
-    <input type="radio" name="decodeMode" value="inline" checked> Inline words
-  </label>
-  <label>
-    <input type="radio" name="decodeMode" value="lines"> One word per line
-  </label>
+  <div class="mode-toggle">
+    <button id="cheeneseBtn" class="active">Cheenese 🧀</button>
+    <button id="cataneeseBtn">Cataneese 🖥️</button>
+  </div>
 
-  <div id="output"></div>
+  <textarea id="inputText" placeholder="Enter text here..."></textarea>
+  <div class="controls">
+    <button onclick="pasteText()">Paste</button>
+    <button onclick="encode()">Encode</button>
+    <button onclick="decode()">Decode</button>
+  </div>
 
-  <script>
-    function isLink(word) {
-      return /^https?:\/\/\S+$/i.test(word);
+  <textarea id="outputText" placeholder="Output will appear here..." readonly></textarea>
+  <div class="controls">
+    <button onclick="copyText()">Copy</button>
+  </div>
+
+  <div id="counter" class="counter green">Length: 0</div>
+  <div id="warning" class="warning"></div>
+
+<script>
+let currentMode = "cheenese"; // default
+
+document.getElementById("cheeneseBtn").addEventListener("click", () => {
+  currentMode = "cheenese";
+  document.getElementById("cheeneseBtn").classList.add("active");
+  document.getElementById("cataneeseBtn").classList.remove("active");
+});
+
+document.getElementById("cataneeseBtn").addEventListener("click", () => {
+  currentMode = "cataneese";
+  document.getElementById("cataneeseBtn").classList.add("active");
+  document.getElementById("cheeneseBtn").classList.remove("active");
+});
+
+// ========== CHEENESE (Caesar Shift) ==========
+function cheeneseEncode(text) {
+  return text.replace(/[a-z]/gi, c => {
+    let base = c === c.toUpperCase() ? 65 : 97;
+    return String.fromCharCode((c.charCodeAt(0) - base + 3) % 26 + base);
+  });
+}
+function cheeneseDecode(text) {
+  return text.replace(/[a-z]/gi, c => {
+    let base = c === c.toUpperCase() ? 65 : 97;
+    return String.fromCharCode((c.charCodeAt(0) - base - 3 + 26) % 26 + base);
+  });
+}
+
+// ========== CATANEESE (Assembly-like) ==========
+function cataneeseEncode(text) {
+  return text.split("\n").map(line => {
+    if (/https?:\/\//.test(line)) {
+      return `LINK = (${line.trim()})`;
     }
+    if (line.trim() === "") return "SPECIAL = [LINE BREAK]";
+    return line.split(" ").map(word => {
+      return "TEXT = [" + word.split("").map(c => {
+        let code = c.toLowerCase().charCodeAt(0) - 96;
+        if (code < 1 || code > 26) return c; 
+        return code + "[" + (c === c.toUpperCase() ? "UP" : "LOW") + "]";
+      }).join(" ") + "]";
+    }).join("\n");
+  }).join("\n");
+}
 
-    function encode() {
-      let text = document.getElementById("inputText").value;
-      let lines = text.split("\n");
-      let encoded = [];
-
-      for (let line of lines) {
-        if (line.trim() === "") {
-          encoded.push("SPECIAL = [LINE BREAK]");
-          continue;
-        }
-        let words = line.split(" ");
-        for (let word of words) {
-          if (isLink(word)) {
-            encoded.push("LINK = (" + word + ")");
-          } else if (word === "🧀Cheenese™" || word === "🧀") {
-            encoded.push("TEXT = [🧀]");
-          } else {
-            let encodedWord = word.split("").map(ch => {
-              if (/[a-z]/.test(ch)) {
-                return (ch.charCodeAt(0) - 96) + "[LOW]";
-              } else if (/[A-Z]/.test(ch)) {
-                return (ch.charCodeAt(0) - 64) + "[UP]";
-              } else if (ch === "🧀") {
-                return "🧀";
-              } else {
-                return ch;
-              }
-            }).join(" ");
-            encoded.push("TEXT = [" + encodedWord + "]");
+function cataneeseDecode(text) {
+  return text.split("\n").map(line => {
+    if (line.startsWith("LINK =")) {
+      return line.match(/\((.*?)\)/)[1];
+    }
+    if (line.startsWith("SPECIAL = [LINE BREAK]")) {
+      return "";
+    }
+    if (line.startsWith("TEXT =")) {
+      return line.replace(/TEXT = \[([^\]]+)\]/g, (_, inside) => {
+        return inside.split(" ").map(token => {
+          if (/^\d+\[UP\]$/.test(token)) {
+            let num = parseInt(token);
+            return String.fromCharCode(num + 64);
           }
-        }
-      }
-      document.getElementById("output").innerText = encoded.join("\n");
-    }
-
-    function decode() {
-      let text = document.getElementById("output").innerText;
-      let lines = text.split("\n");
-      let decoded = [];
-
-      for (let line of lines) {
-        if (line.startsWith("SPECIAL = [LINE BREAK]")) {
-          decoded.push("\n");
-        } else if (line.startsWith("LINK = (")) {
-          let link = line.match(/LINK = \((.*?)\)/)[1];
-          decoded.push('<a href="' + link + '" target="_blank">' + link + '</a>');
-        } else if (line.startsWith("TEXT = [")) {
-          let inside = line.match(/TEXT = \[(.*)\]/)[1];
-          if (inside === "🧀") {
-            decoded.push("🧀Cheenese™");
-          } else {
-            let parts = inside.split(" ");
-            let word = parts.map(p => {
-              if (p.endsWith("[LOW]")) {
-                return String.fromCharCode(parseInt(p) + 96);
-              } else if (p.endsWith("[UP]")) {
-                return String.fromCharCode(parseInt(p) + 64);
-              } else if (p === "🧀") {
-                return "🧀Cheenese™";
-              } else {
-                return p;
-              }
-            }).join("");
-            decoded.push(word);
+          if (/^\d+\[LOW\]$/.test(token)) {
+            let num = parseInt(token);
+            return String.fromCharCode(num + 96);
           }
-        }
-      }
-
-      let mode = document.querySelector('input[name="decodeMode"]:checked').value;
-      if (mode === "lines") {
-        document.getElementById("output").innerHTML = decoded.join("\n");
-      } else {
-        document.getElementById("output").innerHTML = decoded.join(" ");
-      }
+          return token;
+        }).join("");
+      });
     }
-  </script>
+    return line;
+  }).join("\n").replace(/\n\n+/g, "\n");
+}
+
+// ========== Controls ==========
+function encode() {
+  let input = document.getElementById("inputText").value;
+  let output = (currentMode === "cheenese") ? cheeneseEncode(input) : cataneeseEncode(input);
+  document.getElementById("outputText").value = output;
+  updateCounter(output);
+}
+function decode() {
+  let input = document.getElementById("inputText").value;
+  let output = (currentMode === "cheenese") ? cheeneseDecode(input) : cataneeseDecode(input);
+  document.getElementById("outputText").value = output;
+  updateCounter(output);
+}
+function copyText() {
+  let text = document.getElementById("outputText");
+  text.select();
+  document.execCommand("copy");
+}
+async function pasteText() {
+  const text = await navigator.clipboard.readText();
+  document.getElementById("inputText").value = text;
+}
+function updateCounter(text) {
+  let len = text.length;
+  let counter = document.getElementById("counter");
+  let warning = document.getElementById("warning");
+  counter.textContent = "Length: " + len;
+
+  if (len < 2000) {
+    counter.className = "counter green";
+    warning.textContent = "";
+  } else if (len < 4000) {
+    counter.className = "counter yellow";
+    warning.textContent = "⚠ Needs Discord Nitro to send!";
+  } else {
+    counter.className = "counter red";
+    warning.textContent = "⛔ Too long to send on Discord!";
+  }
+}
+</script>
 </body>
 </html>
